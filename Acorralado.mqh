@@ -32,6 +32,7 @@ public:
                     ~Acorralado();
    void              loadTicketArray(void);
    double            getBalance();
+   string            getBotName(void){return name;}
    void              close();
    
   };
@@ -63,7 +64,7 @@ void Acorralado::loadTicketArray(void){
    for(i=0;i<itotal;i++){
       OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
        // check for opened position, symbol & MagicNumber
-       if (OrderSymbol()== Symbol()){
+       if (OrderSymbol()== Symbol() && OrderMagicNumber() == magicNumber){
          lsNumOrder[p] = OrderTicket();
          Comment(lsNumOrder[p]);
          Sleep(500);
@@ -87,6 +88,7 @@ void Acorralado::loadTicketArray(void){
 
 double Acorralado::getBalance(void){
    double dBalance;
+   dBalance = 0;
    p=0;
    while(lsNumOrder[p]>-1){
       OrderSelect(lsNumOrder[p],SELECT_BY_TICKET);
