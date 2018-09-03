@@ -23,8 +23,11 @@ enum btc {
       bbot=0, //bot
       btob=1, //tob
 };
+
+input bool restart = true;
 input btc botToClose=bbot;
-input double panicProfit = -1;
+input double profitToClose = -1;
+input double microLotes = 0.03;
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -48,17 +51,25 @@ void OnDeinit(const int reason)
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
 void OnTick(){
+   //get balance & close for bot or tob
    if(botToClose == 0){
       //get commision+swap+rpofit running orders
       botBalance = bot.getBalance();
       Comment("bot balance: ",botBalance);
-      if(botBalance >= panicProfit)
-         bot.close(); 
+      if(botBalance >= profitToClose){
+         bot.close(microLotes); 
+         if(restart)
+            bot.restart();
+         }
       }else{
       tobBalance = tob.getBalance();
-      if(tobBalance >= panicProfit)
-         tob.close();   
       Comment("tob balance: ",tobBalance);
+      if(tobBalance >= profitToClose){
+         tob.close(microLotes);   
+         if(restart)
+            tob.restart();
+         }
+      
       }
    
    Sleep(750);   

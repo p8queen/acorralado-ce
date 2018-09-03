@@ -22,10 +22,11 @@ private:
    double priceBuys, priceSells;
    double balance;
    bool botIsOpen;
-   int firstOrderOP;
+   int lastOrderOP;
    int p, magicNumber;
-   int lsNumOrder[10];
+   int lsNumOrder[20];
    
+   double            maxMicrolotesOpen(void);
    
 public:
                      Acorralado(string robotName, int robotMagicNumber);
@@ -33,7 +34,8 @@ public:
    void              loadTicketArray(void);
    double            getBalance();
    string            getBotName(void){return name;}
-   void              close();
+   void              close(double microLotes);
+   void              restart(void);
    
   };
 //+------------------------------------------------------------------+
@@ -103,16 +105,41 @@ double Acorralado::getBalance(void){
    return dBalance;
    }
    
- void Acorralado::close(void){
+ void Acorralado::close(double microLotes){
+   if(maxMicrolotesOpen()>=microLotes){
+         p=0;
+         while(lsNumOrder[p]>-1){
+            OrderSelect(lsNumOrder[p],SELECT_BY_TICKET);
+            if(OrderType()==OP_BUY || OrderType()==OP_SELL)
+               OrderClose(lsNumOrder[p],OrderLots(),OrderClosePrice(),10);      
+            else
+               OrderDelete(lsNumOrder[p]); //buystop, sellstop, etc
+         
+            p++;
+         }
+      } 
+    }
+ 
+ double Acorralado::maxMicrolotesOpen(void){
+   double maxMicroLotes;
+   maxMicroLotes = 0.01;
    p=0;
    while(lsNumOrder[p]>-1){
       OrderSelect(lsNumOrder[p],SELECT_BY_TICKET);
-      if(OrderType()==OP_BUY || OrderType()==OP_SELL)
-         OrderClose(lsNumOrder[p],OrderLots(),OrderClosePrice(),10);      
-      else
-         OrderDelete(lsNumOrder[p]); //buystop, sellstop, etc
-   
-      p++;
+      if(OrderType()==OP_BUY || OrderType()==OP_SELL){
+         if(OrderLots()>maxMicroLotes){
+            maxMicroLotes=OrderLots();
+            lastOrderOP = OrderType();
+            }
+         }
+       p++;
+       }
+    
+    return maxMicroLotes;
    }
+   
+ void Acorralado::restart(void){
+   Comment("restart ..., last OP: ", lastOrderOP);
+   Sleep(1000);
  
-    }
+ }  
